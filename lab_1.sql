@@ -133,7 +133,6 @@ END;
 BEGIN
     DBMS_OUTPUT.PUT_LINE(PRINTINSERT(1));
     DBMS_OUTPUT.PUT_LINE(Reward(2, 3));
-    
 END;
 
 EXECUTE InsertIntoTable(11, 5);
