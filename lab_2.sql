@@ -115,15 +115,11 @@ SELECT * FROM GROUPS;
 
 
 ----------TASK 3----------
-CREATE OR REPLACE TRIGGER custom_foreign_key
+CREATE OR REPLACE NONEDITIONABLE TRIGGER new_custom_foreign_key
     AFTER DELETE ON GROUPS
     FOR EACH ROW
-    DECLARE
-        PRAGMA AUTONOMOUS_TRANSACTION;
     BEGIN
-        EXECUTE IMMEDIATE 'ALTER TRIGGER custom_foreign_key DISABLE';
         EXECUTE IMMEDIATE 'DELETE FROM STUDENTS WHERE STUDENTS.group_id = '||:OLD.id;
-        EXECUTE IMMEDIATE 'ALTER TRIGGER custom_foreign_key ENABLE';
     END;
 
 DELETE FROM STUDENTS WHERE id = 1;
@@ -197,45 +193,37 @@ SELECT * FROM STUDENTS;
 
 INSERT INTO STUDENTS(student_name, group_id) values('Vanya', 4);
 UPDATE STUDENTS SET STUDENTS.group_id=5 WHERE STUDENTS.id=3;
-SELECT * FROM student_logger;
+SELECT * FROM students_logging;
 
 DELETE FROM STUDENTS WHERE student_name='Vanya';
-EXEC restore_students(TO_TIMESTAMP('19-Feb-02 01.19.05.0000000 PM'));
+EXEC restore_students(TO_TIMESTAMP('09-Feb-02 01.19.05.0000000 PM'));
 EXEC restore_students(TO_TIMESTAMP(CURRENT_TIMESTAMP - 45));
 EXEC restore_students(TO_TIMESTAMP(CURRENT_TIMESTAMP + numToDSInterval( 1, 'second' )));
 
 
 ----------TASK 6----------
+DROP TRIGGER check_unique_student_name_at_groups_trigger;
 CREATE OR REPLACE TRIGGER c_val_update
     AFTER INSERT OR UPDATE OR DELETE
     ON STUDENTS
-    for each row
+    FOR EACH ROW
 BEGIN
     IF INSERTING THEN
-        UPDATE GROUPS
-        SET C_VAL = C_VAL + 1
-        WHERE id = :new.group_id;
+        UPDATE GROUPS SET C_VAL = C_VAL + 1 WHERE id = :new.group_id;
     END IF;
     IF UPDATING THEN
-        UPDATE GROUPS
-        SET C_VAL = C_VAL - 1
-        WHERE id = :old.group_id;
-        
-        UPDATE GROUPS
-        SET C_VAL = C_VAL + 1
-        WHERE id = :new.group_id;
+        UPDATE GROUPS SET C_VAL = C_VAL - 1 WHERE id = :old.group_id;
+        UPDATE GROUPS SET C_VAL = C_VAL + 1 WHERE id = :new.group_id;
     END IF;
     IF DELETING THEN
-        UPDATE GROUPS
-        SET C_VAL = C_VAL - 1
-        WHERE id = :old.group_id;
+        UPDATE GROUPS SET C_VAL = C_VAL - 1 WHERE id = :old.group_id;
     END IF;
 END;
 
-INSERT INTO students(student_name, group_id) values('001', 4);
-INSERT INTO students(student_name, group_id) values('002', 5);
-INSERT INTO students(student_name, group_id) values('003', 5);
-INSERT INTO students(student_name, group_id) values('004', 6);
+INSERT INTO STUDENTS(student_name, group_id) values('001', 4);
+INSERT INTO STUDENTS(student_name, group_id) values('002', 5);
+INSERT INTO STUDENTS(student_name, group_id) values('003', 5);
+INSERT INTO STUDENTS(student_name, group_id) values('004', 6);
 
 UPDATE STUDENTS SET group_id=6 where id=36;
 DELETE FROM STUDENTS WHERE id=37;
